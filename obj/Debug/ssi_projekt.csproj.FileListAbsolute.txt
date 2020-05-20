@@ -1,0 +1,7 @@
+C:\Users\matih\Documents\semestr4\ssi\ssi_projekt\bin\Debug\ssi_projekt.exe.config
+C:\Users\matih\Documents\semestr4\ssi\ssi_projekt\bin\Debug\ssi_projekt.exe
+C:\Users\matih\Documents\semestr4\ssi\ssi_projekt\bin\Debug\ssi_projekt.pdb
+C:\Users\matih\Documents\semestr4\ssi\ssi_projekt\obj\Debug\ssi_projekt.csprojAssemblyReference.cache
+C:\Users\matih\Documents\semestr4\ssi\ssi_projekt\obj\Debug\ssi_projekt.csproj.CoreCompileInputs.cache
+C:\Users\matih\Documents\semestr4\ssi\ssi_projekt\obj\Debug\ssi_projekt.exe
+C:\Users\matih\Documents\semestr4\ssi\ssi_projekt\obj\Debug\ssi_projekt.pdb
