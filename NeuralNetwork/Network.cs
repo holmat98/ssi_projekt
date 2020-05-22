@@ -52,7 +52,7 @@ namespace ssi_projekt.NeuralNetwork
                         for (int k = 0; k < layers[i - 1].Neurons.Count; k++) // neurony w powłoce poprzedniej
                         {
                             // stworzenie połączenia między neuronami, pierwszy argument to waga, drugi neuron poprzedniej powłoki, trzeci to aktualny neuron
-                            Synapse newSynapse = new Synapse(Math.Round(rnd.NextDouble(), 2), layers[i - 1].Neurons[k], layers[i].Neurons[j]);
+                            Synapse newSynapse = new Synapse(Math.Round(rnd.NextDouble()*2 - 1, 2), layers[i - 1].Neurons[k], layers[i].Neurons[j]);
                             // dodanie połączenia do listy z połączeniami danego neuronu
                             layers[i - 1].Neurons[k].Outputs.Add(newSynapse);
                             layers[i].Neurons[j].Inputs.Add(newSynapse);
@@ -101,15 +101,22 @@ namespace ssi_projekt.NeuralNetwork
 
             while (iteration < iterations)
             {
-                //int accuracySum = 0;
+                int accuracySum = 0;
                 // poruszanie po wierszach z przekazanego zestawu danych
                 for(int i=0; i < inputData.Length; i++)
                 {
                     // input -> dane, które będą wykorzystane do obliczenia wartości wyjściowej
                     // expected -> wartość poprawna dla danego przypadku
-                    double[] input = new double[8] { inputData[i][0], inputData[i][1], inputData[i][2], inputData[i][3], inputData[i][4], inputData[i][5], inputData[i][6], inputData[i][7] };
-                    double[] expected = new double[1] { inputData[i][8] };
-
+                    double[] input = new double[inputData[i].Length-2];
+                    double[] expected;
+                    for (int j = 0; j < input.Length; j++)
+                        input[j] = inputData[i][j + 2];
+                    if (inputData[i][2] > inputData[i][3])
+                        expected = new double[2] { 1, 0 };
+                    else if (inputData[i][2] < inputData[i][3])
+                        expected = new double[2] { 0, 1 };
+                    else
+                        expected = new double[2] { 1, 1 };
                     // wynik uzyskany dla danego przypadku
                     double[] output = Calculate(input);
 
@@ -118,10 +125,13 @@ namespace ssi_projekt.NeuralNetwork
                     // zaktualizowanie wag w połączeniach między neuronami
                     UpdateWeights(errors);
 
-                    /*int currentSum = 0;
+                    /*Console.WriteLine("--------------------------------------------------------------------------------");
+                    Console.WriteLine($"Wynik: ({output[0]}||{output[1]}) Prawdziwy: ({expected[0]}||{expected[1]})");*/
+
+                    int currentSum = 0;
                     for(int j=0; j<output.Length; j++)
                     {
-                        if (output[j] >= 0.35)
+                        if (output[j] >= 0.5)
                             output[j] = 1;
                         else
                             output[j] = 0;
@@ -130,10 +140,12 @@ namespace ssi_projekt.NeuralNetwork
                             currentSum++;
                     }
                     if (currentSum == output.Length)
-                        accuracySum++;*/
+                        accuracySum++;
                 }
                 iteration++;
-                //Console.WriteLine($"{iteration}) Zgodność: {(accuracySum / (double)inputData.Length)*100}%");
+                
+                Console.WriteLine($"{iteration}) Zgodność: {(accuracySum / (double)inputData.Length)*100}%");
+                //Console.WriteLine("--------------------------------------------------------------------------------");
             }
             // Zapis uzyskanych wag do pliku
             if(File.Exists("../../WeightsFile/weigths.txt") == false)
@@ -149,6 +161,7 @@ namespace ssi_projekt.NeuralNetwork
 
         public void GetOutput(double[][] inputData)
         {
+
             int accuracySum = 0;
             for (int i = 0; i < inputData.Length; i++)
             {
@@ -303,6 +316,8 @@ namespace ssi_projekt.NeuralNetwork
         }
 
         #endregion
+
+        
 
     }
 }

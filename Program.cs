@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ssi_projekt.NeuralNetwork;
+using ssi_projekt.ActivationFunction;
 
 namespace ssi_projekt
 {
@@ -12,7 +14,15 @@ namespace ssi_projekt
         {
             Dane dane = new Dane();
             double[][] dane_mecze = dane.Pobierz("bundesliga_dane.txt");
-            double[][] srednie = dane.Pobierz("bundesliga_srednie.txt");
+
+            dane_mecze = dane.Normalizuj(dane_mecze);
+            dane_mecze = dane.Tasowanie(dane_mecze);
+
+            Network network = new Network(5, 16, 2, 0.1, new SigmoidFunction());
+            network.Train(dane_mecze, 1000);
+
+            Console.WriteLine("Wczytano");
+            Console.ReadKey();
         }
     }
 }
