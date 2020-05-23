@@ -18,7 +18,7 @@ namespace ssi_projekt
             dane_mecze = dane.Normalizuj(dane_mecze);
             dane_mecze = dane.Tasowanie(dane_mecze);
 
-            Network network = new Network(5, 16, 2, 0.1, new SigmoidFunction());
+            Network network = new Network(10, 16, 2, 1, new SigmoidFunction());
             network.Train(dane_mecze, 1000);
 
             Console.WriteLine("Wczytano");

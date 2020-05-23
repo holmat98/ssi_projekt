@@ -52,7 +52,7 @@ namespace ssi_projekt.NeuralNetwork
                         for (int k = 0; k < layers[i - 1].Neurons.Count; k++) // neurony w powłoce poprzedniej
                         {
                             // stworzenie połączenia między neuronami, pierwszy argument to waga, drugi neuron poprzedniej powłoki, trzeci to aktualny neuron
-                            Synapse newSynapse = new Synapse(Math.Round(rnd.NextDouble()*2 - 1, 2), layers[i - 1].Neurons[k], layers[i].Neurons[j]);
+                            Synapse newSynapse = new Synapse(Math.Round(rnd.NextDouble(), 2), layers[i - 1].Neurons[k], layers[i].Neurons[j]);
                             // dodanie połączenia do listy z połączeniami danego neuronu
                             layers[i - 1].Neurons[k].Outputs.Add(newSynapse);
                             layers[i].Neurons[j].Inputs.Add(newSynapse);
