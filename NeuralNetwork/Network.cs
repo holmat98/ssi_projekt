@@ -107,16 +107,10 @@ namespace ssi_projekt.NeuralNetwork
                 {
                     // input -> dane, które będą wykorzystane do obliczenia wartości wyjściowej
                     // expected -> wartość poprawna dla danego przypadku
-                    double[] input = new double[inputData[i].Length-2];
-                    double[] expected;
+                    double[] input = new double[inputData[i].Length-4];
+                    double[] expected = new double[2] { inputData[i][2], inputData[i][3]};
                     for (int j = 0; j < input.Length; j++)
-                        input[j] = inputData[i][j + 2];
-                    if (inputData[i][2] > inputData[i][3])
-                        expected = new double[2] { 1, 0 };
-                    else if (inputData[i][2] < inputData[i][3])
-                        expected = new double[2] { 0, 1 };
-                    else
-                        expected = new double[2] { 1, 1 };
+                        input[j] = inputData[i][j + 4];
                     // wynik uzyskany dla danego przypadku
                     double[] output = Calculate(input);
 
@@ -125,13 +119,13 @@ namespace ssi_projekt.NeuralNetwork
                     // zaktualizowanie wag w połączeniach między neuronami
                     UpdateWeights(errors);
 
-                    /*Console.WriteLine("--------------------------------------------------------------------------------");
-                    Console.WriteLine($"Wynik: ({output[0]}||{output[1]}) Prawdziwy: ({expected[0]}||{expected[1]})");*/
+                    //Console.WriteLine("------------------------------------------------------------------------------");
+                    //Console.WriteLine($"Wynik: ({output[0]}||{output[1]}) Prawdziwy: ({expected[0]}||{expected[1]})");
 
                     int currentSum = 0;
-                    for(int j=0; j<output.Length; j++)
+                    for (int j = 0; j < output.Length; j++)
                     {
-                        if (output[j] >= 0.5)
+                        if (output[j] >= 0.55)
                             output[j] = 1;
                         else
                             output[j] = 0;
@@ -141,6 +135,18 @@ namespace ssi_projekt.NeuralNetwork
                     }
                     if (currentSum == output.Length)
                         accuracySum++;
+
+                    //Console.WriteLine($"Wynik: ({output[0]}||{output[1]}) Prawdziwy: ({expected[0]}||{expected[1]})");
+                    //Console.WriteLine("------------------------------------------------------------------------------");
+
+                    /*if(iteration == 99)
+                    {
+                        Console.WriteLine("--------------------------------------------------------------------------------");
+                        Console.WriteLine($"Wynik: ({output[0]}||{output[1]}) Prawdziwy: ({expected[0]}||{expected[1]})");
+                    }*/
+
+
+
                 }
                 iteration++;
                 
@@ -161,33 +167,55 @@ namespace ssi_projekt.NeuralNetwork
 
         public void GetOutput(double[][] inputData)
         {
+            string team1;
+            Console.WriteLine("Podaj drużynę gospodarzy:");
+            team1 = Console.ReadLine();
+            string team2;
+            Console.WriteLine("Podaj drużynę gości:");
+            team2 = Console.ReadLine();
 
-            int accuracySum = 0;
-            for (int i = 0; i < inputData.Length; i++)
+            int team1Number = TeamNumber(team1);
+            int team2Number = TeamNumber(team2);
+
+            double[] input = new double[14];
+
+            for(int i=0; i<inputData.Length; i++)
             {
-                // podzielenie danego wiersza na dane wejściowe i dane poprawne
-                double[] input = new double[8] { inputData[i][0], inputData[i][1], inputData[i][2], inputData[i][3], inputData[i][4], inputData[i][5], inputData[i][6], inputData[i][7] };
-                double[] expected = new double[1] { inputData[i][8] };
-                // obliczenie wyjscia
-                double[] output = Calculate(input);
-                int currentSum = 0;
-                // porównanie czy wynik obliczony jest zgodny z wynikiem podanym
-                for (int j = 0; j < output.Length; j++)
+                if(inputData[i][0] == team1Number)
                 {
-                    if (output[j] >= 0.35)
-                        output[j] = 1;
-                    else
-                        output[j] = 0;
-
-                    if (output[j] == expected[j]) // jesli tak to zwiększamy ilośc, w której dany neuron wyjsciowy ma taką samą wartość jak wynik poprawny
-                        currentSum++;
+                    for(int j=1; j<inputData[i].Length; j++)
+                    {
+                        input[(j - 1) * 2] = inputData[i][j];
+                    }
                 }
-                if (currentSum == expected.Length) // jeśli ilość takich samych wyników jest równa ilości neuronów wyjściowych to zwiększamy wartość accuracysum
-                    accuracySum++;
-                
+
+                if(inputData[i][0] == team2Number)
+                {
+                    for (int j = 1; j < inputData[i].Length; j++)
+                    {
+                        input[(j * 2) - 1] = inputData[i][j];
+                    }
+                }
             }
-            // wypisanie procentu w jakim otrzymane wyniki są zgodne
-            Console.WriteLine($"Zgodność dla ostatnich 30% danych: {(accuracySum / (double)inputData.Length) * 100}%");
+
+            double[] output = Calculate(input);
+
+            for(int i=0; i<output.Length; i++)
+            {
+                if (output[i] >= 0.85)
+                    output[i] = 1;
+                else
+                    output[i] = 0;
+            }
+
+            if (output[0] == 1 && output[1] == 0)
+                Console.WriteLine($"Wygra drużyna {team1}");
+            else if (output[0] == 0 && output[1] == 1)
+                Console.WriteLine($"Wygra drużyna {team2}");
+            else if (output[0] == 1 && output[1] == 1)
+                Console.WriteLine($"W tym meczu będzie remis");
+            else
+                Console.WriteLine("Nie wiem kto wygra");
         }
 
         #endregion
@@ -317,7 +345,61 @@ namespace ssi_projekt.NeuralNetwork
 
         #endregion
 
-        
+        private int TeamNumber(string teamName)
+        {
+            int number = 0;
+
+            if (teamName == "Augsburg")
+                number = 0;
+            else if (teamName == "Bayern Munich")
+                number = 1;
+            else if (teamName == "Darmstadt")
+                number = 2;
+            else if (teamName == "Dortmund")
+                number = 3;
+            else if (teamName == "Ein Frankfurt")
+                number = 4;
+            else if (teamName == "FC Koln")
+                number = 5;
+            else if (teamName == "Fortuna Dusseldorf")
+                number = 6;
+            else if (teamName == "Freiburg")
+                number = 7;
+            else if (teamName == "Hamburg")
+                number = 8;
+            else if (teamName == "Hannover")
+                number = 9;
+            else if (teamName == "Hertha")
+                number = 10;
+            else if (teamName == "Hoffenheim")
+                number = 11;
+            else if (teamName == "Ingolstadt")
+                number = 12;
+            else if (teamName == "Leverkusen")
+                number = 13;
+            else if (teamName == "Mainz")
+                number = 14;
+            else if (teamName == "Mgladbach")
+                number = 15;
+            else if (teamName == "Nurnberg")
+                number = 16;
+            else if (teamName == "Paderborn")
+                number = 17;
+            else if (teamName == "RB Leipzig")
+                number = 18;
+            else if (teamName == "Schalke 04")
+                number = 19;
+            else if (teamName == "Stuttgart")
+                number = 20;
+            else if (teamName == "Union Berlin")
+                number = 21;
+            else if (teamName == "Werder Bremen")
+                number = 22;
+            else if (teamName == "Wolfsburg")
+                number = 23;
+
+            return number;
+        }
 
     }
 }
