@@ -20,7 +20,7 @@ namespace ssi_projekt
             dane_mecze = dane.Normalizuj(dane_mecze, srednie);
             dane_mecze = dane.Tasowanie(dane_mecze);
 
-            Network network = new Network(6, 14, 2, 1, new SigmoidFunction());
+            Network network = new Network(4, 14, 2, 0.5, new SigmoidFunction(), "weights.txt");
 
             //network.Train(dane_mecze, 1000);
 
@@ -37,7 +37,7 @@ namespace ssi_projekt
 
                 if (decyzja == "1")
                 {
-                    network.Train(dane_mecze, 1000);
+                    network.Train(dane_mecze, 5000);
                     Console.ReadKey();
                 }
                 else if (decyzja == "2")

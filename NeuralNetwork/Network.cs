@@ -14,11 +14,13 @@ namespace ssi_projekt.NeuralNetwork
     {
         private List<Layer> layers = new List<Layer>();
         private double learningRate;
+        private string fileName;
 
         #region Creating Neural Network
-        public Network(double layersNumber, double inputNeuronsNumber, double outputNeuronsNumber, double learningRate, IActivationFunction activationFunction)
+        public Network(double layersNumber, double inputNeuronsNumber, double outputNeuronsNumber, double learningRate, IActivationFunction activationFunction, string fileName)
         {
             this.learningRate = learningRate;
+            this.fileName = fileName;
             //tworzenie powłók oraz neuronów
             for(int i=0; i<layersNumber-1; i++) 
             {
@@ -86,6 +88,8 @@ namespace ssi_projekt.NeuralNetwork
 
         #endregion
 
+        #region BackPropgation
+
         #region Neural network training and getting output:
         public void Train(double[][] inputData, int iterations)
         {
@@ -98,6 +102,9 @@ namespace ssi_projekt.NeuralNetwork
             {
                 errors[i] = new double[layers[i].Neurons.Count];
             }
+
+            StreamWriter streamWriter;
+            streamWriter = File.AppendText("wyniki.txt");
 
             while (iteration < iterations)
             {
@@ -151,16 +158,19 @@ namespace ssi_projekt.NeuralNetwork
                 iteration++;
                 
                 Console.WriteLine($"{iteration}) Zgodność: {(accuracySum / (double)inputData.Length)*100}%");
+                if (iteration % 5 == 0)
+                        streamWriter.WriteLine($"{Math.Round((accuracySum / (double)inputData.Length) * 100, 2)}");
                 //Console.WriteLine("--------------------------------------------------------------------------------");
             }
+            streamWriter.Close();
             // Zapis uzyskanych wag do pliku
-            if(File.Exists("../../WeightsFile/weigths.txt") == false)
+            if(File.Exists("../../WeightsFile/"+fileName) == false)
             {
                 writeToFile();
             }
             else
             {
-                File.Delete("../../WeightsFile/weigths.txt");
+                File.Delete("../../WeightsFile/"+fileName);
                 writeToFile();
             }
         }
@@ -316,7 +326,7 @@ namespace ssi_projekt.NeuralNetwork
         {
             // zapisanie otrzymanych wag po trenowaniu sieci neuronowej do pliku
             StreamWriter streamWriter;
-            streamWriter = File.AppendText("../../WeightsFile/weigths.txt");
+            streamWriter = File.AppendText("../../WeightsFile/"+fileName);
             for(int i=0; i<layers.Count-1; i++)
             {
                 for(int j=0; j<layers[i].Neurons.Count; j++)
@@ -333,7 +343,7 @@ namespace ssi_projekt.NeuralNetwork
         private double[] readFromFile()
         {
             // wczytanie do tablicy wszystkich wag zapisanych w pliku
-            string[] lines = File.ReadAllLines("../../WeightsFile/weigths.txt");
+            string[] lines = File.ReadAllLines("../../WeightsFile/"+fileName);
             double[] weights = new double[lines.Length];
             for(int i=0; i<lines.Length; i++)
             {
@@ -343,6 +353,14 @@ namespace ssi_projekt.NeuralNetwork
             return weights;
         }
 
+        #endregion
+
+        #endregion
+
+        #region Heb rule
+
+
+        
         #endregion
 
         private int TeamNumber(string teamName)
