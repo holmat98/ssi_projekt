@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActivationFunction\Function.cs" />
     <Compile Include="ActivationFunction\IActivationFunction.cs" />
     <Compile Include="ActivationFunction\SigmoidFunction.cs" />
     <Compile Include="Dane.cs" />

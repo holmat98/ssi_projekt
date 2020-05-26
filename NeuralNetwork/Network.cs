@@ -54,7 +54,7 @@ namespace ssi_projekt.NeuralNetwork
                         for (int k = 0; k < layers[i - 1].Neurons.Count; k++) // neurony w powłoce poprzedniej
                         {
                             // stworzenie połączenia między neuronami, pierwszy argument to waga, drugi neuron poprzedniej powłoki, trzeci to aktualny neuron
-                            Synapse newSynapse = new Synapse(Math.Round(rnd.NextDouble(), 2), layers[i - 1].Neurons[k], layers[i].Neurons[j]);
+                            Synapse newSynapse = new Synapse(Math.Round(rnd.NextDouble()*(1 - (-1)) +(-1), 2), layers[i - 1].Neurons[k], layers[i].Neurons[j]);
                             // dodanie połączenia do listy z połączeniami danego neuronu
                             layers[i - 1].Neurons[k].Outputs.Add(newSynapse);
                             layers[i].Neurons[j].Inputs.Add(newSynapse);
@@ -320,18 +320,107 @@ namespace ssi_projekt.NeuralNetwork
 
         #endregion
 
+        #endregion
+
+        #region Heb rule
+
+        public void TrainHR(double[][] inputData, int iterations)
+        {
+            int iteration = 0;
+            // tablica z błędami
+            double[][] errors = new double[layers.Count][];
+
+            for (int i = 0; i < layers.Count; i++)
+            {
+                errors[i] = new double[layers[i].Neurons.Count];
+            }
+
+            StreamWriter streamWriter;
+            streamWriter = File.AppendText("wyniki.txt");
+
+            while (iteration < iterations)
+            {
+                int accuracySum = 0;
+                // poruszanie po wierszach z przekazanego zestawu danych
+                for (int i = 0; i < inputData.Length; i++)
+                {
+                    // input -> dane, które będą wykorzystane do obliczenia wartości wyjściowej
+                    // expected -> wartość poprawna dla danego przypadku
+                    double[] input = new double[inputData[i].Length - 4];
+                    double[] expected = new double[2] { inputData[i][2], inputData[i][3] };
+                    for (int j = 0; j < input.Length; j++)
+                        input[j] = inputData[i][j + 4];
+                    // wynik uzyskany dla danego przypadku
+                    double[] output = Calculate(input);
+                    //Console.WriteLine($"{output[0]} | {output[1]} || {expected[0]}{expected[1]}");
+
+                    UpdateWeightsHR();
+
+                    int currentSum = 0;
+                    for (int j = 0; j < output.Length; j++)
+                    {
+                        if (output[j] >= 0)
+                            output[j] = 1;
+                        else
+                            output[j] = 0;
+
+                        if (output[j] == expected[j])
+                            currentSum++;
+                    }
+                    if (currentSum == output.Length)
+                        accuracySum++;
+                }
+                iteration++;
+
+                Console.WriteLine($"{iteration}) Zgodność: {(accuracySum / (double)inputData.Length) * 100}%");
+                if (iteration % 5 == 0)
+                    streamWriter.WriteLine($"{Math.Round((accuracySum / (double)inputData.Length) * 100, 2)}");
+            }
+            streamWriter.Close();
+            // Zapis uzyskanych wag do pliku
+            if (File.Exists("../../WeightsFile/" + fileName) == false)
+            {
+                writeToFile();
+            }
+            else
+            {
+                File.Delete("../../WeightsFile/" + fileName);
+                writeToFile();
+            }
+        }
+
+        private void UpdateWeightsHR()
+        {
+            for(int i=layers.Count-1; i>0; i--)
+            {
+                for(int j=0; j<layers[i].Neurons.Count; j++)
+                {
+                    for(int k=0; k<layers[i].Neurons[j].Inputs.Count; k++)
+                    {
+                        layers[i].Neurons[j].Inputs[k].Weight = layers[i].Neurons[j].Inputs[k].Weight + learningRate * layers[i].Neurons[j].OutputValue * layers[i - 1].Neurons[k].OutputValue;
+                        layers[i-1].Neurons[k].Outputs[j].Weight = layers[i].Neurons[j].Inputs[k].Weight + learningRate * layers[i].Neurons[j].OutputValue * layers[i - 1].Neurons[k].OutputValue;
+                        /*double delta = learningRate * layers[i - 1].Neurons[k].OutputValue * layers[i].Neurons[j].OutputValue - 0.5 * layers[i].Neurons[j].Inputs[k].Weight * layers[i - 1].Neurons[k].OutputValue;
+                        layers[i].Neurons[j].Inputs[k].Weight += delta;
+                        layers[i - 1].Neurons[k].Outputs[j].Weight += delta;*/
+                    }
+                }
+            }
+        }
+
+        #endregion
+
         #region Weigths writing and reading
 
         private void writeToFile()
         {
             // zapisanie otrzymanych wag po trenowaniu sieci neuronowej do pliku
             StreamWriter streamWriter;
-            streamWriter = File.AppendText("../../WeightsFile/"+fileName);
-            for(int i=0; i<layers.Count-1; i++)
+            streamWriter = File.AppendText("../../WeightsFile/" + fileName);
+            for (int i = 0; i < layers.Count - 1; i++)
             {
-                for(int j=0; j<layers[i].Neurons.Count; j++)
+                for (int j = 0; j < layers[i].Neurons.Count; j++)
                 {
-                    for(int k=0; k<layers[i].Neurons[j].Outputs.Count; k++)
+                    for (int k = 0; k < layers[i].Neurons[j].Outputs.Count; k++)
                     {
                         streamWriter.WriteLine(layers[i].Neurons[j].Outputs[k].Weight);
                     }
@@ -343,9 +432,9 @@ namespace ssi_projekt.NeuralNetwork
         private double[] readFromFile()
         {
             // wczytanie do tablicy wszystkich wag zapisanych w pliku
-            string[] lines = File.ReadAllLines("../../WeightsFile/"+fileName);
+            string[] lines = File.ReadAllLines("../../WeightsFile/" + fileName);
             double[] weights = new double[lines.Length];
-            for(int i=0; i<lines.Length; i++)
+            for (int i = 0; i < lines.Length; i++)
             {
                 weights[i] = Convert.ToDouble(lines[i]);
             }
@@ -353,14 +442,6 @@ namespace ssi_projekt.NeuralNetwork
             return weights;
         }
 
-        #endregion
-
-        #endregion
-
-        #region Heb rule
-
-
-        
         #endregion
 
         private int TeamNumber(string teamName)
