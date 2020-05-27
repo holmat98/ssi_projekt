@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -54,7 +55,7 @@ namespace ssi_projekt.NeuralNetwork
                         for (int k = 0; k < layers[i - 1].Neurons.Count; k++) // neurony w powłoce poprzedniej
                         {
                             // stworzenie połączenia między neuronami, pierwszy argument to waga, drugi neuron poprzedniej powłoki, trzeci to aktualny neuron
-                            Synapse newSynapse = new Synapse(Math.Round(rnd.NextDouble()*(1 - (-1)) +(-1), 2), layers[i - 1].Neurons[k], layers[i].Neurons[j]);
+                            Synapse newSynapse = new Synapse(Math.Round(rnd.NextDouble(), 2), layers[i - 1].Neurons[k], layers[i].Neurons[j]);
                             // dodanie połączenia do listy z połączeniami danego neuronu
                             layers[i - 1].Neurons[k].Outputs.Add(newSynapse);
                             layers[i].Neurons[j].Inputs.Add(newSynapse);
@@ -103,9 +104,6 @@ namespace ssi_projekt.NeuralNetwork
                 errors[i] = new double[layers[i].Neurons.Count];
             }
 
-            StreamWriter streamWriter;
-            streamWriter = File.AppendText("wyniki.txt");
-
             while (iteration < iterations)
             {
                 int accuracySum = 0;
@@ -126,8 +124,6 @@ namespace ssi_projekt.NeuralNetwork
                     // zaktualizowanie wag w połączeniach między neuronami
                     UpdateWeights(errors);
 
-                    //Console.WriteLine("------------------------------------------------------------------------------");
-                    //Console.WriteLine($"Wynik: ({output[0]}||{output[1]}) Prawdziwy: ({expected[0]}||{expected[1]})");
 
                     int currentSum = 0;
                     for (int j = 0; j < output.Length; j++)
@@ -143,26 +139,11 @@ namespace ssi_projekt.NeuralNetwork
                     if (currentSum == output.Length)
                         accuracySum++;
 
-                    //Console.WriteLine($"Wynik: ({output[0]}||{output[1]}) Prawdziwy: ({expected[0]}||{expected[1]})");
-                    //Console.WriteLine("------------------------------------------------------------------------------");
-
-                    /*if(iteration == 99)
-                    {
-                        Console.WriteLine("--------------------------------------------------------------------------------");
-                        Console.WriteLine($"Wynik: ({output[0]}||{output[1]}) Prawdziwy: ({expected[0]}||{expected[1]})");
-                    }*/
-
-
-
                 }
                 iteration++;
                 
                 Console.WriteLine($"{iteration}) Zgodność: {(accuracySum / (double)inputData.Length)*100}%");
-                if (iteration % 5 == 0)
-                        streamWriter.WriteLine($"{Math.Round((accuracySum / (double)inputData.Length) * 100, 2)}");
-                //Console.WriteLine("--------------------------------------------------------------------------------");
             }
-            streamWriter.Close();
             // Zapis uzyskanych wag do pliku
             if(File.Exists("../../WeightsFile/"+fileName) == false)
             {
@@ -322,22 +303,14 @@ namespace ssi_projekt.NeuralNetwork
 
         #endregion
 
-        #region Heb rule
+        #region Widrow-Hoff's rule
 
-        public void TrainHR(double[][] inputData, int iterations)
+        public void TrainWH(double[][] inputData, int iterations)
         {
             int iteration = 0;
-            // tablica z błędami
-            double[][] errors = new double[layers.Count][];
-
-            for (int i = 0; i < layers.Count; i++)
-            {
-                errors[i] = new double[layers[i].Neurons.Count];
-            }
 
             StreamWriter streamWriter;
             streamWriter = File.AppendText("wyniki.txt");
-
             while (iteration < iterations)
             {
                 int accuracySum = 0;
@@ -352,18 +325,12 @@ namespace ssi_projekt.NeuralNetwork
                         input[j] = inputData[i][j + 4];
                     // wynik uzyskany dla danego przypadku
                     double[] output = Calculate(input);
-                    //Console.WriteLine($"{output[0]} | {output[1]} || {expected[0]}{expected[1]}");
 
-                    UpdateWeightsHR();
+                    UpdateWeightsWH(output, expected);
 
                     int currentSum = 0;
                     for (int j = 0; j < output.Length; j++)
                     {
-                        if (output[j] >= 0)
-                            output[j] = 1;
-                        else
-                            output[j] = 0;
-
                         if (output[j] == expected[j])
                             currentSum++;
                     }
@@ -373,8 +340,8 @@ namespace ssi_projekt.NeuralNetwork
                 iteration++;
 
                 Console.WriteLine($"{iteration}) Zgodność: {(accuracySum / (double)inputData.Length) * 100}%");
-                if (iteration % 5 == 0)
-                    streamWriter.WriteLine($"{Math.Round((accuracySum / (double)inputData.Length) * 100, 2)}");
+                if (iteration % 100 == 0)
+                    streamWriter.WriteLine($"{iteration}\t{Math.Round((accuracySum / (double)inputData.Length) * 100, 2)}");
             }
             streamWriter.Close();
             // Zapis uzyskanych wag do pliku
@@ -389,7 +356,7 @@ namespace ssi_projekt.NeuralNetwork
             }
         }
 
-        private void UpdateWeightsHR()
+        private void UpdateWeightsWH(double[] output, double[] expected)
         {
             for(int i=layers.Count-1; i>0; i--)
             {
@@ -397,14 +364,57 @@ namespace ssi_projekt.NeuralNetwork
                 {
                     for(int k=0; k<layers[i].Neurons[j].Inputs.Count; k++)
                     {
-                        layers[i].Neurons[j].Inputs[k].Weight = layers[i].Neurons[j].Inputs[k].Weight + learningRate * layers[i].Neurons[j].OutputValue * layers[i - 1].Neurons[k].OutputValue;
-                        layers[i-1].Neurons[k].Outputs[j].Weight = layers[i].Neurons[j].Inputs[k].Weight + learningRate * layers[i].Neurons[j].OutputValue * layers[i - 1].Neurons[k].OutputValue;
-                        /*double delta = learningRate * layers[i - 1].Neurons[k].OutputValue * layers[i].Neurons[j].OutputValue - 0.5 * layers[i].Neurons[j].Inputs[k].Weight * layers[i - 1].Neurons[k].OutputValue;
+                        double delta = learningRate * layers[i - 1].Neurons[k].OutputValue * (expected[j] - layers[i].Neurons[j].OutputValue);
                         layers[i].Neurons[j].Inputs[k].Weight += delta;
-                        layers[i - 1].Neurons[k].Outputs[j].Weight += delta;*/
+                        layers[i - 1].Neurons[k].Outputs[j].Weight += delta;
                     }
                 }
             }
+        }
+
+        public void GetOutput1(double[][] inputData)
+        {
+            string team1;
+            Console.WriteLine("Podaj drużynę gospodarzy:");
+            team1 = Console.ReadLine();
+            string team2;
+            Console.WriteLine("Podaj drużynę gości:");
+            team2 = Console.ReadLine();
+
+            int team1Number = TeamNumber(team1);
+            int team2Number = TeamNumber(team2);
+
+            double[] input = new double[14];
+
+            for (int i = 0; i < inputData.Length; i++)
+            {
+                if (inputData[i][0] == team1Number)
+                {
+                    for (int j = 1; j < inputData[i].Length; j++)
+                    {
+                        input[(j - 1) * 2] = inputData[i][j];
+                    }
+                }
+
+                if (inputData[i][0] == team2Number)
+                {
+                    for (int j = 1; j < inputData[i].Length; j++)
+                    {
+                        input[(j * 2) - 1] = inputData[i][j];
+                    }
+                }
+            }
+
+            double[] output = Calculate(input);
+
+            if (output[0] == 1 && output[1] == 0)
+                Console.WriteLine($"Wygra drużyna {team1}");
+            else if (output[0] == 0 && output[1] == 1)
+                Console.WriteLine($"Wygra drużyna {team2}");
+            else if (output[0] == 1 && output[1] == 1)
+                Console.WriteLine($"W tym meczu będzie remis");
+            else
+                Console.WriteLine("Nie wiem kto wygra");
         }
 
         #endregion

@@ -10,12 +10,16 @@ namespace ssi_projekt.ActivationFunction
     {
         public double Calculate(double value)
         {
-            return (2 / (1 + Math.Exp(value))) - 1;
+            if (value >= 0)
+                return 1;
+            else
+                return 0;
+               
         }
 
         public double Derivative(double value)
         {
-            return -((2 * Math.Exp(value)) / Math.Pow(Math.Exp(value) + 1, 2));
+            return 1;
         }
     }
 }
