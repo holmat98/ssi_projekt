@@ -22,8 +22,6 @@ namespace ssi_projekt
             Network network = new Network(4, 14, 2, 0.5, new SigmoidFunction(), "weights.txt");
             Network network1 = new Network(2, 14, 2, 1, new Function(), "weights2.txt");
 
-            //network.Train(dane_mecze, 1000);
-
             string decyzja = "";
             while (decyzja != "5")
             {
@@ -31,9 +29,13 @@ namespace ssi_projekt
                 Console.WriteLine("Wsteczna propagacja błędu:");
                 Console.WriteLine("1) Trenuj sieć");
                 Console.WriteLine("2) Uzyskaj rezultat");
+
+                Console.WriteLine();
                 Console.WriteLine("Reguła Widrowa-Hoffa:");
                 Console.WriteLine("3) Trenuj sieć");
                 Console.WriteLine("4) Uzyskaj rezultat");
+
+                Console.WriteLine();
                 Console.WriteLine("5) Koniec programu");
 
                 Console.WriteLine("Wybierz opcje:");
@@ -65,7 +67,7 @@ namespace ssi_projekt
 
                 else if(decyzja == "4")
                 {
-                    network.GetOutput1(srednie);
+                    network1.GetOutput1(srednie);
                     Console.ReadKey();
                 }
                     

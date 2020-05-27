@@ -309,8 +309,6 @@ namespace ssi_projekt.NeuralNetwork
         {
             int iteration = 0;
 
-            StreamWriter streamWriter;
-            streamWriter = File.AppendText("wyniki.txt");
             while (iteration < iterations)
             {
                 int accuracySum = 0;
@@ -340,10 +338,8 @@ namespace ssi_projekt.NeuralNetwork
                 iteration++;
 
                 Console.WriteLine($"{iteration}) Zgodność: {(accuracySum / (double)inputData.Length) * 100}%");
-                if (iteration % 100 == 0)
-                    streamWriter.WriteLine($"{iteration}\t{Math.Round((accuracySum / (double)inputData.Length) * 100, 2)}");
+                
             }
-            streamWriter.Close();
             // Zapis uzyskanych wag do pliku
             if (File.Exists("../../WeightsFile/" + fileName) == false)
             {
